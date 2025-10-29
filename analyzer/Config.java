@@ -59,16 +59,23 @@ public class Config {
         return parseConfig(content);
     }
 
-    // Парсинг JSON конфигурации (упрощенная версия)
+    // Улучшенный парсинг JSON
     private static Config parseConfig(String jsonContent) {
-        // Упрощенный парсинг JSON без внешних зависимостей
         Config config = new Config();
 
         try {
-            // Удаляем пробелы и разбиваем по строкам для простоты парсинга
+            // Удаляем пробелы и переносы строк для упрощения парсинга
             jsonContent = jsonContent.replaceAll("\\s+", "");
 
-            // Парсим каждое поле
+            // Проверяем базовую структуру JSON
+            if (!jsonContent.startsWith("{") || !jsonContent.endsWith("}")) {
+                throw new IllegalArgumentException("Неверный формат JSON: должен начинаться с { и заканчиваться }");
+            }
+
+            // Удаляем внешние фигурные скобки
+            jsonContent = jsonContent.substring(1, jsonContent.length() - 1);
+
+            // Парсим каждое поле с улучшенной обработкой
             config.packageName = extractStringValue(jsonContent, "packageName");
             config.repositoryUrl = extractStringValue(jsonContent, "repositoryUrl");
             config.repositoryMode = extractStringValue(jsonContent, "repositoryMode");
@@ -88,9 +95,13 @@ public class Config {
         java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
         java.util.regex.Matcher m = p.matcher(json);
         if (m.find()) {
-            return m.group(1);
+            String value = m.group(1);
+            if (value.isEmpty()) {
+                throw new IllegalArgumentException("Значение для ключа '" + key + "' не может быть пустым");
+            }
+            return value;
         }
-        throw new IllegalArgumentException("Не найдено значение для ключа: " + key);
+        throw new IllegalArgumentException("Не найдено значение для обязательного ключа: " + key);
     }
 
     private static Boolean extractBooleanValue(String json, String key) {
@@ -108,7 +119,11 @@ public class Config {
         java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
         java.util.regex.Matcher m = p.matcher(json);
         if (m.find()) {
-            return Integer.parseInt(m.group(1));
+            try {
+                return Integer.parseInt(m.group(1));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Неверный числовой формат для ключа: " + key);
+            }
         }
         throw new IllegalArgumentException("Не найдено числовое значение для ключа: " + key);
     }
