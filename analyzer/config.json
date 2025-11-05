@@ -1,8 +1,9 @@
 {
-    "packageName": "com.example.mypackage",
+    "packageName": "CLI.mypackage",
     "repositoryUrl": "https://github.com/damtem25/CLIanalyzer",
     "repositoryMode": "remote",
     "outputImage": "dependency_graph.png",
     "asciiTreeOutput": true,
     "maxDepth": 5
 }
+
